@@ -15,6 +15,7 @@ class Showcase extends StatefulWidget {
   final TextStyle titleTextStyle;
   final TextStyle descTextStyle;
   final EdgeInsets contentPadding;
+  final CrossAxisAlignment contentCrossAxisAlignment;
   final GlobalKey key;
   final Color overlayColor;
   final double overlayOpacity;
@@ -29,6 +30,8 @@ class Showcase extends StatefulWidget {
   final VoidCallback onTargetClick;
   final bool disposeOnTap;
   final bool disableAnimation;
+  final EdgeInsets spotlightPadding;
+  final EdgeInsets spotlightMargin;
 
   const Showcase({
     @required this.key,
@@ -48,7 +51,10 @@ class Showcase extends StatefulWidget {
     this.animationDuration = const Duration(milliseconds: 2000),
     this.disableAnimation = false,
     this.contentPadding = const EdgeInsets.symmetric(vertical: 8),
+    this.contentCrossAxisAlignment,
     this.onToolTipClick,
+    this.spotlightPadding = const EdgeInsets.all(0.0),
+    this.spotlightMargin = const EdgeInsets.all(0.0),
   })  : height = null,
         width = null,
         container = null,
@@ -73,6 +79,7 @@ class Showcase extends StatefulWidget {
             overlayColor != null ||
             titleTextStyle != null ||
             descTextStyle != null ||
+            contentCrossAxisAlignment != null ||
             showcaseBackgroundColor != null ||
             textColor != null ||
             shapeBorder != null ||
@@ -91,12 +98,15 @@ class Showcase extends StatefulWidget {
       this.overlayOpacity = 0.75,
       this.titleTextStyle,
       this.descTextStyle,
+      this.contentCrossAxisAlignment,
       this.showcaseBackgroundColor = Colors.white,
       this.textColor = Colors.black,
       this.onTargetClick,
       this.disposeOnTap,
       this.animationDuration = const Duration(milliseconds: 2000),
       this.disableAnimation = false,
+      this.spotlightPadding,
+      this.spotlightMargin,
       this.contentPadding = const EdgeInsets.symmetric(vertical: 8)})
       : this.showArrow = false,
         this.onToolTipClick = null,
@@ -227,6 +237,28 @@ class _ShowcaseState extends State<Showcase> with TickerProviderStateMixin {
     }
   }
 
+  Rect _getSpotlightRect(Size screenSize) {
+    Rect r = position.getRect();
+    double left =
+        r.left - widget.spotlightPadding.left < widget.spotlightMargin.left
+            ? widget.spotlightMargin.left
+            : r.left - widget.spotlightPadding.left;
+    double top =
+        r.top - widget.spotlightPadding.top < widget.spotlightMargin.top
+            ? widget.spotlightMargin.top
+            : r.top - widget.spotlightPadding.top;
+    double right = r.right + widget.spotlightPadding.right >
+            screenSize.width - widget.spotlightMargin.right
+        ? screenSize.width - widget.spotlightMargin.right
+        : r.right + widget.spotlightPadding.right;
+    double bottom = r.bottom + widget.spotlightPadding.bottom >
+            screenSize.height - widget.spotlightMargin.bottom
+        ? screenSize.height - widget.spotlightMargin.bottom
+        : r.bottom + widget.spotlightPadding.bottom;
+
+    return Rect.fromLTRB(left, top, right, bottom);
+  }
+
   buildOverlayOnTarget(
     Offset offset,
     Size size,
@@ -247,7 +279,7 @@ class _ShowcaseState extends State<Showcase> with TickerProviderStateMixin {
                 child: CustomPaint(
                   painter: ShapePainter(
                       opacity: widget.overlayOpacity,
-                      rect: position.getRect(),
+                      rect: _getSpotlightRect(screenSize),
                       shapeBorder: widget.shapeBorder,
                       color: widget.overlayColor),
                 ),
@@ -276,6 +308,7 @@ class _ShowcaseState extends State<Showcase> with TickerProviderStateMixin {
               contentWidth: widget.width,
               onTooltipTap: _getOnTooltipTap(),
               contentPadding: widget.contentPadding,
+              contentCrossAxisAlignment: widget.contentCrossAxisAlignment,
             ),
           ],
         ),

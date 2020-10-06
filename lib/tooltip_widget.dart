@@ -46,6 +46,7 @@ class ToolTipWidget extends StatefulWidget {
   static bool isArrowUp;
   final VoidCallback onTooltipTap;
   final EdgeInsets contentPadding;
+  final CrossAxisAlignment contentCrossAxisAlignment;
 
   ToolTipWidget(
       {this.position,
@@ -63,7 +64,8 @@ class ToolTipWidget extends StatefulWidget {
       this.contentHeight,
       this.contentWidth,
       this.onTooltipTap,
-      this.contentPadding});
+      this.contentPadding,
+      this.contentCrossAxisAlignment});
 
   @override
   _ToolTipWidgetState createState() => _ToolTipWidgetState();
@@ -87,12 +89,31 @@ class _ToolTipWidgetState extends State<ToolTipWidget> {
   }
 
   double _getTooltipWidth() {
-    double titleLength = widget.title == null ? 0 : widget.title.length * 10.0;
-    double descriptionLength = widget.description.length * 7.0;
+    double titleLength = 0;
+    if (widget.title != null) {
+      final titleTextPainter = TextPainter(
+          textDirection: TextDirection.ltr,
+          text: TextSpan(style: widget.titleTextStyle, text: widget.title));
+      titleTextPainter.layout();
+      titleLength = titleTextPainter.width;
+    }
+
+    final descriptionTextPainter = TextPainter(
+        textDirection: TextDirection.ltr,
+        text: TextSpan(style: widget.descTextStyle, text: widget.description));
+    descriptionTextPainter.layout();
+    double descriptionLength = descriptionTextPainter.width;
+
     if (titleLength > descriptionLength) {
-      return titleLength + 10;
+      return titleLength +
+          widget.contentPadding.left +
+          widget.contentPadding.right +
+          10;
     } else {
-      return descriptionLength + 10;
+      return descriptionLength +
+          widget.contentPadding.left +
+          widget.contentPadding.right +
+          10;
     }
   }
 
@@ -208,9 +229,12 @@ class _ToolTipWidgetState extends State<ToolTipWidget> {
                             children: <Widget>[
                               Container(
                                 child: Column(
-                                  crossAxisAlignment: widget.title != null
-                                      ? CrossAxisAlignment.start
-                                      : CrossAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      widget.contentCrossAxisAlignment != null
+                                          ? widget.contentCrossAxisAlignment
+                                          : widget.title != null
+                                              ? CrossAxisAlignment.start
+                                              : CrossAxisAlignment.center,
                                   children: <Widget>[
                                     widget.title != null
                                         ? Text(
